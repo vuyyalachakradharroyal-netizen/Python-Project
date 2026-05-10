@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Animated Slot Machine 🎰</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0f172a,#111827,#1e293b);
+    overflow:hidden;
+    color:white;
+}
+
+/* Animated Background */
+body::before{
+    content:"";
+    position:absolute;
+    width:200%;
+    height:200%;
+    background:
+    radial-gradient(circle,#ff00ff55 0%, transparent 20%),
+    radial-gradient(circle,#00ffff44 0%, transparent 25%),
+    radial-gradient(circle,#00ff8855 0%, transparent 20%);
+    animation:moveBg 12s linear infinite;
+}
+
+@keyframes moveBg{
+    0%{transform:translate(0,0);}
+    50%{transform:translate(-10%,-10%);}
+    100%{transform:translate(0,0);}
+}
+
+.casino{
+    position:relative;
+    z-index:10;
+    width:420px;
+    padding:30px;
+    border-radius:25px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(10px);
+    box-shadow:0 0 30px rgba(0,255,255,0.3);
+    text-align:center;
+}
+
+h1{
+    font-size:2.2rem;
+    margin-bottom:10px;
+    color:#00ffff;
+}
+
+.balance{
+    margin-bottom:20px;
+    font-size:1.2rem;
+}
+
+.slot-container{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    margin:30px 0;
+}
+
+.slot{
+    width:90px;
+    height:90px;
+    background:#111827;
+    border:3px solid #00ffff;
+    border-radius:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:3rem;
+    box-shadow:
+        0 0 15px #00ffff88,
+        inset 0 0 10px #00ffff44;
+}
+
+.spin-animation{
+    animation:spin 0.15s linear infinite;
+}
+
+@keyframes spin{
+    0%{transform:translateY(-5px);}
+    50%{transform:translateY(5px);}
+    100%{transform:translateY(-5px);}
+}
+
+input{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    margin-bottom:15px;
+    text-align:center;
+    font-size:1rem;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(90deg,#00ffff,#ff00ff);
+    color:white;
+    font-size:1rem;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+.message{
+    margin-top:20px;
+    min-height:30px;
+    font-size:1.1rem;
+    font-weight:bold;
+}
+
+.win{
+    color:#00ff88;
+}
+
+.lose{
+    color:#ff5f5f;
+}
+
+.payouts{
+    margin-top:15px;
+    color:#ccc;
+}
+</style>
+</head>
+
+<body>
+
+<div class="casino">
+
+    <h1>🎰 SLOT MACHINE</h1>
+
+    <div class="balance">
+        Balance: $<span id="balance">1000</span>
+    </div>
+
+    <div class="slot-container">
+        <div class="slot" id="slot1">🍎</div>
+        <div class="slot" id="slot2">🍌</div>
+        <div class="slot" id="slot3">🍒</div>
+    </div>
+
+    <input type="number" id="bet" placeholder="Enter bet amount">
+
+    <button id="spinBtn">SPIN NOW</button>
+
+    <div class="message" id="message"></div>
+
+    <div class="payouts">
+        🍒 x10 | 🍌 x9 | 🍎 x5 | 🥭 x3 | 🍍 x1
+    </div>
+
+</div>
+
+<script>
+const symbols = ['🍎','🍌','🍍','🥭','🍒'];
+
+const payouts = {
+    '🍒':10,
+    '🍌':9,
+    '🍎':5,
+    '🥭':3,
+    '🍍':1
+};
+
+let balance = 1000;
+
+const balanceEl = document.getElementById("balance");
+const messageEl = document.getElementById("message");
+
+const slot1 = document.getElementById("slot1");
+const slot2 = document.getElementById("slot2");
+const slot3 = document.getElementById("slot3");
+
+const spinBtn = document.getElementById("spinBtn");
+
+function randomSymbol(){
+    return symbols[Math.floor(Math.random() * symbols.length)];
+}
+
+function updateBalance(){
+    balanceEl.textContent = balance;
+}
+
+function showMessage(text, type){
+    messageEl.textContent = text;
+    messageEl.className = "message " + type;
+}
+
+function spin(){
+
+    const betInput = document.getElementById("bet");
+    const bet = parseInt(betInput.value);
+
+    if(isNaN(bet) || bet <= 0){
+        showMessage("❌ Enter a valid bet!", "lose");
+        return;
+    }
+
+    if(bet > balance){
+        showMessage("❌ Not enough balance!", "lose");
+        return;
+    }
+
+    balance -= bet;
+    updateBalance();
+
+    const slots = [slot1, slot2, slot3];
+
+    slots.forEach(slot => {
+        slot.classList.add("spin-animation");
+    });
+
+    spinBtn.disabled = true;
+
+    const interval = setInterval(() => {
+        slot1.textContent = randomSymbol();
+        slot2.textContent = randomSymbol();
+        slot3.textContent = randomSymbol();
+    }, 100);
+
+    setTimeout(() => {
+
+        clearInterval(interval);
+
+        const result1 = randomSymbol();
+        const result2 = randomSymbol();
+        const result3 = randomSymbol();
+
+        slot1.textContent = result1;
+        slot2.textContent = result2;
+        slot3.textContent = result3;
+
+        slots.forEach(slot => {
+            slot.classList.remove("spin-animation");
+        });
+
+        let payout = 0;
+
+        if(result1 === result2 && result2 === result3){
+
+            payout = bet * payouts[result1];
+            balance += payout;
+
+            showMessage("🎉 JACKPOT! You won $" + payout, "win");
+
+        }else{
+
+            showMessage("😢 No match! Try again.", "lose");
+        }
+
+        updateBalance();
+
+        if(balance <= 0){
+            showMessage("💀 Game Over! No balance left.", "lose");
+            spinBtn.disabled = true;
+        }
+
+        spinBtn.disabled = false;
+
+    }, 2000);
+}
+
+spinBtn.addEventListener("click", spin);
+</script>
+
+</body>
+</html>
